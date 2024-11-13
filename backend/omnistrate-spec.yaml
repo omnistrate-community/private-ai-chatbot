@@ -1,0 +1,178 @@
+version: '3.9'
+
+x-omnistrate-service-plan:
+  name: 'AI ChatBot SaaS'
+  tenancyType: 'OMNISTRATE_DEDICATED_TENANCY'
+  deployment:
+    hostedDeployment:
+      AwsAccountId: '<ACCOUNT ID>'
+      AwsBootstrapRoleAccountArn: 'arn:aws:iam::<ACCOUNT ID>:role/omnistrate-bootstrap-role'
+
+x-omnistrate-load-balancer:
+  https:
+    - name: gateway
+      description: L7 Load Balancer for Web Frontend
+      paths:
+        - associatedResourceKey: app
+          path: /
+          backendPort: 3000
+        - associatedResourceKey: backend
+          path: /api
+          backendPort: 8080
+
+x-customer-integrations:
+  logs:
+  metrics:
+    additionalMetrics:
+      backend:
+        prometheusEndpoint: 'http://backend:8080/api/metrics'
+        metrics:
+          total_chat_threads_created:
+            Number of chat threads created:
+          total_request_tokens:
+            Number of request tokens received:
+          total_response_tokens:
+            Number of response tokens sent:
+          total_successful_signin_attempts:
+            Number of successful sign-in attempts:
+
+services:
+  app:
+    depends_on:
+      - backend
+    x-omnistrate-compute:
+      instanceTypes:
+        - name: t4g.small
+          cloudProvider: aws
+    x-omnistrate-capabilities:
+      enableMultiZone: true
+      networkType: INTERNAL
+    x-omnistrate-api-params:
+      - key: modelProviderAPIKey
+        description: The API key for the model provider
+        name: Model Provider API Key (OpenAI)
+        type: Password
+        modifiable: true
+        required: true
+        export: true
+        parameterDependencyMap:
+          backend: modelProviderAPIKey
+      - key: omnistrateUsername
+        description: The username for Omnistrate
+        name: Omnistrate Username
+        type: String
+        modifiable: true
+        required: true
+        export: true
+        parameterDependencyMap:
+          backend: omnistrateUsername
+      - key: omnistratePassword
+        description: The password for Omnistrate
+        name: Omnistrate Password
+        type: Password
+        modifiable: true
+        required: true
+        export: true
+        parameterDependencyMap:
+          backend: omnistratePassword
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"  # Expose frontend on port 3000
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_BASE_URL=https://{{ $backend.sys.network.externalClusterEndpoint }}
+
+  backend:
+    depends_on:
+      - postgres
+    x-omnistrate-mode-internal: true
+    x-omnistrate-compute:
+      instanceTypes:
+        - name: t4g.small
+          cloudProvider: aws
+    x-omnistrate-capabilities:
+      enableMultiZone: true
+      networkType: INTERNAL
+    x-omnistrate-api-params:
+      - key: modelProviderAPIKey
+        description: The API key for the model provider
+        name: Model Provider API Key (OpenAI)
+        type: Password
+        modifiable: true
+        required: true
+        export: true
+      - key: omnistrateUsername
+        description: The username for Omnistrate
+        name: Omnistrate Username
+        type: String
+        modifiable: true
+        required: true
+        export: true
+      - key: omnistratePassword
+        description: The password for Omnistrate
+        name: Omnistrate Password
+        type: Password
+        modifiable: true
+        required: true
+        export: true
+    environment:
+      - MODEL_PROVIDER=openai
+      - MODEL=gpt-4o
+      - MODEL_PROVIDER_ENDPOINT=https://api.openai.com/v1
+      - MODEL_PROVIDER_API_KEY={{ $var.modelProviderAPIKey }}
+      - OMNISTRATE_USERNAME={{ $var.omnistrateUsername }}
+      - OMNISTRATE_PASSWORD={{ $var.omnistratePassword }}
+      - DB_USER=app_user
+      - DB_PASSWORD={{ $func.random(string, 16, $sys.deterministicSeedValue) }}
+      - DB_NAME=chatbot
+      - DB_HOST=postgres
+      - DB_PORT=5432
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"  # Expose backend on port 8000
+
+  postgres:
+    x-omnistrate-mode-internal: true
+    x-omnistrate-api-params:
+      - key: dbUser
+        description: The username for the database
+        name: Database User
+        type: String
+        modifiable: true
+        required: false
+        export: true
+        defaultValue: app_user
+      - key: dbName
+        description: The name of the database
+        name: Database Name
+        type: String
+        modifiable: true
+        required: false
+        export: true
+        defaultValue: chatbot
+    image: postgres:16.4-alpine
+    environment:
+      - POSTGRES_USER={{ $var.dbUser }}
+      - POSTGRES_PASSWORD={{ $func.random(string, 16, $sys.deterministicSeedValue) }}
+      - POSTGRES_DB={{ $var.dbName }}
+    volumes:
+      - source: postgres_data
+        target: /var/lib/postgresql/data
+        type: volume
+        x-omnistrate-storage:
+          aws:
+            instanceStorageType: AWS::EBS_GP3
+            instanceStorageSizeGi: 50
+            instanceStorageIOPS: 3000
+            instanceStorageThroughputMiBps: 125
+          gcp:
+            instanceStorageType: GCP::PD_BALANCED
+            instanceStorageSizeGi: 50
+    restart: always
+
+volumes:
+  postgres_data:

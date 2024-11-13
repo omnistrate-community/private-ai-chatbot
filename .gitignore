@@ -1,0 +1,69 @@
+### Go ###
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool, specifically when used with LiteIDE
+*.out
+
+# Dependency directories (optional)
+# vendor/
+
+# Go build output
+/go/bin/
+/go/pkg/
+
+### Next.js ###
+# Next.js build output
+.next/
+
+# Logs
+logs
+*.log
+
+# Dependency directories
+node_modules/
+.pnp/
+.pnp.js
+
+# Next.js static exports
+out/
+
+# Build artifacts
+dist/
+build/
+
+### JetBrains IDEs ###
+# User-specific stuff for JetBrains IDEs (IntelliJ IDEA, GoLand, WebStorm, PhpStorm, etc.)
+.idea/
+*.iws
+.idea_modules/
+.idea/**/azureSettings.xml
+
+# CMake build output
+cmake-build-*/
+
+# IntelliJ out directory
+out/
+
+### OS-specific ###
+# macOS Finder files
+.DS_Store
+
+# Windows thumbnail cache files
+Thumbs.db
+
+### Miscellaneous ###
+# Temporary backup files
+*.backup.*
+*.back.*
+
+# Sublime Text project files
+*.sublime*
+
