@@ -1,14 +1,14 @@
 # Private AI Chatbot
 
 A multi-tenant ChatBot for managing AI-powered chat interactions with authentication, tenant management, usage tracking and metrics tracking capabilities powered by [Omnistrate](https://omnistrate.com)
-and [Llama 3.2](https://ai.meta.com/blog/llama-3-2-connect-2024-vision-edge-mobile-devices/)
+and Llama 3.1
 
 ## Features
 
 - User Authentication
 - Chat Thread Management
 - Metrics Monitoring
-- vLLM using the latest Llama 3.2 model on the newest generation of accelerated hardware from AWS (g6e)
+- vLLM using the Llama 3.1 model on the newest generation of accelerated hardware from AWS (g6e)
 
 ## Getting Started
 
