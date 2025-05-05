@@ -1,0 +1,68 @@
+/* Message bubbles animation */
+@keyframes fade-in-up {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.message-bubble {
+  animation: fade-in-up 0.2s ease-out;
+}
+
+.btn-apple-hover {
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.btn-apple-hover:hover {
+  transform: translateY(-2px);
+}
+
+.btn-apple-hover:active {
+  transform: translateY(0px);
+}
+
+.card-apple-hover {
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.card-apple-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+.modal-apple-enter {
+  opacity: 0;
+  transform: scale(0.95);
+}
+
+.modal-apple-enter-active {
+  opacity: 1;
+  transform: scale(1);
+  transition: opacity 150ms, transform 150ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modal-apple-exit {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.modal-apple-exit-active {
+  opacity: 0;
+  transform: scale(0.95);
+  transition: opacity 150ms, transform 150ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.input-apple-focus {
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.input-apple-focus:focus {
+  border-color: hsl(var(--primary));
+  box-shadow: 0 0 0 4px hsla(var(--primary), 0.2);
+}

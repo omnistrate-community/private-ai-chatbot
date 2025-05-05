@@ -212,8 +212,8 @@ export function BillingDetailDialog({
                   className="relative flex items-center border border-input rounded-md shadow-sm focus-within:ring-1 focus-within:ring-ring hover:bg-muted/10 cursor-pointer"
                   onClick={() => {
                     // Create a synthetic mouse event to click on the date input
-                    const dateInput = document.getElementById('start-date-hidden');
-                    if (dateInput) {
+                    const dateInput = document.getElementById('start-date-hidden') as HTMLInputElement;
+                    if (dateInput && dateInput.showPicker) {
                       dateInput.showPicker();
                     }
                   }}
@@ -248,8 +248,8 @@ export function BillingDetailDialog({
                   className="relative flex items-center border border-input rounded-md shadow-sm focus-within:ring-1 focus-within:ring-ring hover:bg-muted/10 cursor-pointer"
                   onClick={() => {
                     // Create a synthetic mouse event to click on the date input
-                    const dateInput = document.getElementById('end-date-hidden');
-                    if (dateInput) {
+                    const dateInput = document.getElementById('end-date-hidden') as HTMLInputElement;
+                    if (dateInput && dateInput.showPicker) {
                       dateInput.showPicker();
                     }
                   }}
@@ -394,7 +394,7 @@ export function BillingDetailDialog({
                             },
                             padding: 12,
                             cornerRadius: 8,
-                            boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                            // boxShadow is not supported in Chart.js tooltip options
                             borderColor: 'rgba(0, 0, 0, 0.1)',
                             borderWidth: 1,
                             displayColors: true,
@@ -428,7 +428,7 @@ export function BillingDetailDialog({
                             beginAtZero: true,
                             grid: {
                               color: 'rgba(0, 0, 0, 0.05)',
-                              drawBorder: false,
+                              // drawBorder property has been removed as it's not supported in newer Chart.js versions
                             },
                             border: {
                               display: false

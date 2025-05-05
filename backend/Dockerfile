@@ -1,6 +1,6 @@
 # Use the official Golang image to create a build artifact.
 # This is based on Debian and sets the GOPATH to /go.
-FROM golang:1.23-bullseye AS builder
+FROM golang:1.24-bullseye AS builder
 
 # Set the Current Working Directory inside the container
 WORKDIR /app

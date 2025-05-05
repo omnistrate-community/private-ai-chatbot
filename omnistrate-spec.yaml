@@ -132,7 +132,7 @@ services:
         - name: e2-medium
           cloudProvider: gcp
     x-omnistrate-capabilities:
-      enableMultiZone: true
+      enableCustomZone: true
       networkType: INTERNAL
     x-omnistrate-api-params:
       - key: modelProviderAPIKey
@@ -206,7 +206,7 @@ services:
         - name: e2-medium
           cloudProvider: gcp
     x-omnistrate-capabilities:
-      enableMultiZone: true
+      enableCustomZone: true
       networkType: INTERNAL
     x-omnistrate-api-params:
       - key: modelProviderAPIKey
@@ -275,6 +275,8 @@ services:
         export: true
         defaultValue: chatbot
     image: postgres:16.4-alpine
+    x-omnistrate-capabilities:
+      enableCustomZone: true
     environment:
       - POSTGRES_USER={{ $var.dbUser }}
       - POSTGRES_PASSWORD={{ $func.random(string, 16, $sys.deterministicSeedValue) }}
@@ -303,6 +305,8 @@ services:
           cloudProvider: aws
     image: vllm/vllm-openai:v0.6.3
     privileged: true
+    x-omnistrate-capabilities:
+      enableCustomZone: true
     volumes:
       - source: cache
         target: /.cache/huggingface

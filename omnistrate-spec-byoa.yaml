@@ -132,7 +132,7 @@ services:
         - name: e2-medium
           cloudProvider: gcp
     x-omnistrate-capabilities:
-      enableMultiZone: true
+      enableCustomZone: true
       networkType: INTERNAL
     x-omnistrate-api-params:
       - key: modelProviderAPIKey
@@ -206,7 +206,7 @@ services:
         - name: e2-medium
           cloudProvider: gcp
     x-omnistrate-capabilities:
-      enableMultiZone: true
+      enableCustomZone: true
       networkType: INTERNAL
     x-omnistrate-api-params:
       - key: modelProviderAPIKey
@@ -257,6 +257,8 @@ services:
 
   postgres:
     x-omnistrate-mode-internal: true
+    x-omnistrate-capabilities:
+      enableCustomZone: true
     x-omnistrate-api-params:
       - key: dbUser
         description: The username for the database
@@ -296,6 +298,8 @@ services:
 
   vllm-openai:
     x-omnistrate-mode-internal: true
+    x-omnistrate-capabilities:
+      enableCustomZone: true
     x-omnistrate-compute:
       rootVolumeSizeGi: 100
       instanceTypes:
