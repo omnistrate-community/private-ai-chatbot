@@ -1,5 +1,5 @@
 # Install dependencies only when needed
-FROM node:18-alpine AS deps
+FROM node:23-alpine AS deps
 WORKDIR /app
 
 # Copy package files and install dependencies
@@ -7,8 +7,12 @@ COPY package.json package-lock.json* ./
 RUN npm ci
 
 # Rebuild the source code only when needed
-FROM node:18-alpine AS builder
+FROM node:23-alpine AS builder
 WORKDIR /app
+
+RUN apk update && \
+    apk add --no-cache ca-certificates bash sed && \
+    update-ca-certificates
 
 # Copy all files
 COPY . .
@@ -17,10 +21,10 @@ COPY --from=deps /app/node_modules ./node_modules
 
 # Build the Next.js application
 ENV NEXT_TELEMETRY_DISABLED 1
-RUN npm run build
+RUN NEXT_PUBLIC_API_BASE_URL=APP_NEXT_PUBLIC_API_BASE_URL npm run build
 
 # Production image, copy necessary files and run next
-FROM node:18-alpine AS runner
+FROM node:23-alpine AS runner
 WORKDIR /app
 
 # Set to production environment
@@ -29,23 +33,24 @@ ENV NEXT_TELEMETRY_DISABLED 1
 
 # Install necessary system dependencies
 RUN apk update && \
-    apk add --no-cache ca-certificates && \
+    apk add --no-cache ca-certificates bash sed && \
     update-ca-certificates
 
-# Create a non-root user for security
-RUN addgroup --system --gid 1001 nodejs && \
-    adduser --system --uid 1001 nextjs
-
 # Copy only necessary files from the builder stage
-COPY --from=builder --chown=nextjs:nodejs /app/public ./public
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=builder /app/public ./public
+COPY --from=builder /app/.next/standalone ./
+COPY --from=builder /app/.next/static ./.next/static
 
-# Add next.config.js for static file serving
-COPY --from=builder --chown=nextjs:nodejs /app/next.config.mjs ./
+# Add next.config.js and other necessary files for static file serving and environment setup
+COPY --from=builder /app/next.config.mjs ./
 
-# Switch to non-root user
-USER nextjs
+# Create public directory for env.js
+RUN mkdir -p public
+
+# Copy env.sh directly from the host to ensure it's the correct version with correct permissions
+COPY ./env.sh ./
+USER root
+RUN chmod +x ./env.sh
 
 # Expose port
 EXPOSE 3000
@@ -53,6 +58,9 @@ EXPOSE 3000
 # Set hostname to listen on all interfaces
 ENV PORT 3000
 ENV HOSTNAME "0.0.0.0"
+
+# Set env.sh as the entrypoint
+ENTRYPOINT ["./env.sh"]
 
 # Run the Next.js application
 CMD ["node", "server.js"]

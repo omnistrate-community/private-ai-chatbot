@@ -188,7 +188,7 @@ services:
     privileged: true
     build:
       context: ./frontend
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.production
     ports:
       - "3000:3000"  # Expose frontend on port 3000
     environment:
