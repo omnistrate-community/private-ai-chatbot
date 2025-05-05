@@ -7,6 +7,16 @@ x-omnistrate-service-plan:
     byoaDeployment:
       AwsAccountId: '541226919566'
       AwsBootstrapRoleAccountArn: 'arn:aws:iam::541226919566:role/omnistrate-bootstrap-role'
+  pricing:
+    - dimension: cpu
+      unit: cores
+      timeUnit: hour
+      price: 1
+    - dimension: memory
+      unit: GiB
+      timeUnit: hour
+      price: 1
+  validPaymentMethodRequired: false
 
 x-omnistrate-load-balancer:
   https:
@@ -67,6 +77,7 @@ x-internal-integrations:
 
 x-customer-integrations:
   logs:
+  licensing:
   metrics:
     additionalMetrics:
       backend:

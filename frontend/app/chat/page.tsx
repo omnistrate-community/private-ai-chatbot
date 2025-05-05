@@ -173,6 +173,21 @@ export default function ChatPage() {
     setInput('')
     setIsLoading(true)
     setError(null)
+    
+    // Build context from previous messages
+    const conversationHistory = messages.map(msg => 
+      `${msg.MessageType === 'query' ? 'User' : 'Assistant'}: ${msg.Content}`
+    ).join('\n\n');
+    
+    // Include thread description as context if available
+    const contextPrefix = chatDescription 
+      ? `Context for this conversation: ${chatDescription}\n\n` 
+      : '';
+    
+    // Combine everything for the complete context
+    const fullContext = conversationHistory 
+      ? `${contextPrefix}Previous conversation:\n${conversationHistory}\n\nUser: ${input}`
+      : input;
 
     try {
       const token = localStorage.getItem('token')
@@ -182,7 +197,10 @@ export default function ChatPage() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ message: input })
+        body: JSON.stringify({ 
+          message: input,
+          context: fullContext 
+        })
       })
 
       if (response.ok) {
@@ -253,25 +271,27 @@ export default function ChatPage() {
           
           <div className="flex-grow overflow-y-auto custom-scrollbar messages-container">
             {selectedThreadId ? (
-              <div className="space-y-6 px-4 pb-8">
+              <div className="space-y-4 px-4 pb-8 pt-2">
                 {messages.length > 0 ? (
                   <>
                     
                     {messages.map((message, index) => (
                       <div key={index} className={`flex ${message.MessageType === 'query' ? 'justify-end' : 'justify-start'}`}>
-                        <div className={`flex items-end space-x-2 ${message.MessageType === 'query' ? 'flex-row-reverse space-x-reverse' : ''}`}>
-                          <Avatar className="w-8 h-8">
+                        <div className={`flex items-end space-x-3 ${message.MessageType === 'query' ? 'flex-row-reverse space-x-reverse' : ''}`}>
+                          <Avatar className="w-8 h-8 border-2 border-background shadow-sm">
                             <AvatarImage src={message.MessageType === 'query' ? '/user-avatar.png' : '/ai-avatar.png'} />
-                            <AvatarFallback>{message.MessageType === 'query' ? 'U' : 'AI'}</AvatarFallback>
+                            <AvatarFallback className="font-medium">{message.MessageType === 'query' ? 'U' : 'AI'}</AvatarFallback>
                           </Avatar>
-                          <div className={`max-w-[70%] rounded-2xl px-4 py-2 ${
-                            message.MessageType === 'query' 
-                              ? 'bg-primary text-primary-foreground' 
-                              : 'bg-muted text-muted-foreground'
-                          }`}>
-                            <p className="text-sm">{message.Content}</p>
-                            <p className="text-xs opacity-50 mt-1">
-                              {new Date(message.CreatedAt).toLocaleString()}
+                          <div 
+                            className={`max-w-[75%] px-4 py-3 shadow-sm message-bubble ${
+                              message.MessageType === 'query' 
+                                ? 'bg-[#0A84FF] text-white rounded-t-2xl rounded-bl-2xl rounded-br-md' 
+                                : 'bg-[#F1F1F1] dark:bg-zinc-800 text-foreground rounded-t-2xl rounded-br-2xl rounded-bl-md'
+                            }`}
+                          >
+                            <p className="text-sm font-normal leading-relaxed whitespace-pre-wrap break-words">{message.Content}</p>
+                            <p className={`text-xs mt-1.5 ${message.MessageType === 'query' ? 'text-blue-100' : 'text-muted-foreground'}`}>
+                              {new Date(message.CreatedAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
                             </p>
                           </div>
                         </div>

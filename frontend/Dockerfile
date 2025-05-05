@@ -8,5 +8,5 @@ ENV NODE_ENV production
 
 EXPOSE 3000
 
-CMD ["npx", "next", "start"]
+CMD ["npm", "run", "dev"]
 LABEL org.opencontainers.image.source="https://github.com/omnistrate-community/ai-chatbot"
