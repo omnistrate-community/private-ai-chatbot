@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/omnistrate-community/ai-chatbot/pkg/billing"
 	"github.com/omnistrate-community/ai-chatbot/pkg/core"
 	"github.com/omnistrate-community/ai-chatbot/pkg/metrics"
 	modelcore "github.com/omnistrate-community/ai-chatbot/pkg/model/core"
@@ -35,6 +36,11 @@ func main() {
 	utils.GinAPI(chatAPIs.ListThreadsHandler).Mount("/chat/thread", "GET")
 	utils.GinAPI(chatAPIs.GetThreadHandler).Mount("/chat/thread/:thread_id", "GET")
 	utils.GinAPI(chatAPIs.QueryThreadHandler).Mount("/chat/thread/:thread_id/query", "POST")
+
+	// Mount billing and usage APIs
+	billingAPIs := billing.NewBilling(metricsServer)
+	utils.GinAPI(billingAPIs.GetUsageHandler).Mount("/billing/usage", "GET")
+	utils.GinAPI(billingAPIs.GetPerDayUsageHandler).Mount("/billing/usage/range/:startDate/:endDate", "GET")
 
 	// Run the server
 	utils.StartServer()

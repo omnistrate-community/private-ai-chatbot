@@ -41,7 +41,7 @@ func (a *Auth) CreateTenant(
 		return
 	}
 
-	customerSignupRequestBody := &openapiclientv1.SignupRequestBody{
+	customerSignupRequestBody := &openapiclientv1.CustomerSignupRequest2{
 		CompanyDescription: utils.ToPtr(user.Org.Description),
 		CompanyUrl:         utils.ToPtr(user.Org.WebsiteURL),
 		Email:              user.Email,
@@ -51,7 +51,7 @@ func (a *Auth) CreateTenant(
 	}
 
 	var httpResult *http.Response
-	if httpResult, err = tenantSignupHandle.SignupRequestBody(*customerSignupRequestBody).Execute(); err != nil {
+	if httpResult, err = tenantSignupHandle.CustomerSignupRequest2(*customerSignupRequestBody).Execute(); err != nil {
 		err = errors.Wrap(err, "failed to execute tenant signup request")
 		return
 	}
@@ -110,14 +110,14 @@ func (a *Auth) AuthenticateTenant(
 		return
 	}
 
-	customerSigninRequestBody := &openapiclientv1.CustomerSigninRequestBody{
+	customerSigninRequestBody := &openapiclientv1.CustomerSigninRequest2{
 		Email:    tenantEmail,
 		Password: utils.ToPtr(tenantPassword),
 	}
 
-	var signinResult *openapiclientv1.SigninResult
+	var signinResult *openapiclientv1.CustomerSigninResult
 	var httpResult *http.Response
-	if signinResult, httpResult, err = tenantSignInHandle.CustomerSigninRequestBody(*customerSigninRequestBody).Execute(); err != nil {
+	if signinResult, httpResult, err = tenantSignInHandle.CustomerSigninRequest2(*customerSigninRequestBody).Execute(); err != nil {
 		err = errors.Wrap(err, "failed to execute tenant signin request")
 		return
 	}
@@ -164,15 +164,15 @@ func (a *Auth) DescribeTenant(
 
 	user = tenant.User{
 		ID:    rawDescribeResult.Id,
-		Email: rawDescribeResult.Email,
-		Name:  rawDescribeResult.Name,
-		OrgID: rawDescribeResult.OrgId,
+		Email: utils.FromPtr(rawDescribeResult.Email),
+		Name:  utils.FromPtr(rawDescribeResult.Name),
+		OrgID: utils.FromPtr(rawDescribeResult.OrgId),
 		Org: tenant.Org{
-			ID:          rawDescribeResult.OrgId,
-			Name:        rawDescribeResult.OrgName,
-			Description: rawDescribeResult.OrgDescription,
-			LogoURL:     rawDescribeResult.OrgLogoURL,
-			WebsiteURL:  rawDescribeResult.OrgURL,
+			ID:          utils.FromPtr(rawDescribeResult.OrgId),
+			Name:        utils.FromPtr(rawDescribeResult.OrgName),
+			Description: utils.FromPtr(rawDescribeResult.OrgDescription),
+			LogoURL:     utils.FromPtr(rawDescribeResult.OrgLogoURL),
+			WebsiteURL:  utils.FromPtr(rawDescribeResult.OrgURL),
 		},
 	}
 

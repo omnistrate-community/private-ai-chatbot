@@ -37,10 +37,10 @@ func (o *OmnistrateServiceAdmin) Authenticate(ctx context.Context) (err error) {
 		return
 	}
 
-	request := openapiclientv1.NewSigninRequestBody(o.username)
+	request := openapiclientv1.NewSigninRequest(o.username)
 	request.Password = ToPtr(o.password)
 
-	result, httpResult, err := GetOmnistrateAPIClient().SigninApiAPI.SigninApiSignin(ctx).SigninRequestBody(*request).Execute()
+	result, httpResult, err := GetOmnistrateAPIClient().SigninApiAPI.SigninApiSignin(ctx).SigninRequest(*request).Execute()
 	if err != nil {
 		return
 	}
@@ -127,7 +127,7 @@ func (o *OmnistrateServiceAdmin) ValidateTenant(ctx context.Context, tenantEmail
 
 			// Create a new client with the JWT token
 			tenantCtx := context.WithValue(ctx, openapiclientv1.ContextAccessToken, o.jwtToken)
-			if httpResult, err = GetOmnistrateAPIClient().SignupApiAPI.SignupApiValidateToken(tenantCtx).ValidateTokenRequestBody(openapiclientv1.ValidateTokenRequestBody{
+			if httpResult, err = GetOmnistrateAPIClient().SignupApiAPI.SignupApiValidateToken(tenantCtx).ValidateTokenRequest(openapiclientv1.ValidateTokenRequest{
 				Email: tenantEmail,
 				Token: event.EventPayload["token"].(string),
 			}).Execute(); err != nil {

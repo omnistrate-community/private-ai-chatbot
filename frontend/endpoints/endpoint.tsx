@@ -12,4 +12,5 @@ export var API_ENDPOINTS = {
     SIGNUP: getSaaSDomainURL() + `/user`,
     PROFILE: getSaaSDomainURL() + `/user/profile`,
     CHAT: getSaaSDomainURL() + `/chat`,
+    BILLING_USAGE: getSaaSDomainURL() + `/billing/usage`,
 }
