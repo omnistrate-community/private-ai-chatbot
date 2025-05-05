@@ -51,29 +51,29 @@ x-internal-integrations:
       vllm-openai:
         prometheusEndpoint: 'http://vllm-openai:8000/metrics'
         metrics:
-          num_requests_running:
+          vllm:num_requests_running:
             Number of requests currently running on GPU:
-          num_requests_swapped:
+          vllm:num_requests_swapped:
             Number of requests swapped to CPU:
-          num_requests_waiting:
+          vllm:num_requests_waiting:
             Number of requests waiting to be processed:
-          gpu_cache_usage_perc:
+          vllm:gpu_cache_usage_perc:
             GPU KV-cache usage. 1 means 100 percent usage:
-          cpu_cache_usage_perc:
+          vllm:cpu_cache_usage_perc:
             CPU KV-cache usage. 1 means 100 percent usage:
-          cpu_prefix_cache_hit_rate:
+          vllm:cpu_prefix_cache_hit_rate:
             CPU prefix cache block hit rate:
-          gpu_prefix_cache_hit_rate:
+          vllm:gpu_prefix_cache_hit_rate:
             GPU prefix cache block hit rate:
-          avg_prompt_throughput_toks_per_s:
+          vllm:avg_prompt_throughput_toks_per_s:
             Average prefill throughput in tokens/s:
-          avg_generation_throughput_toks_per_s:
+          vllm:avg_generation_throughput_toks_per_s:
             Average generation throughput in tokens/s:
-          num_preemptions_total:
+          vllm:num_preemptions_total:
             Cumulative number of preemption from the engine:
-          prompt_tokens_total:
+          vllm:prompt_tokens_total:
             Number of prefill tokens processed:
-          generation_tokens_total:
+          vllm:generation_tokens_total:
             Number of generation tokens processed:
 
 x-customer-integrations:
@@ -94,29 +94,29 @@ x-customer-integrations:
       vllm-openai:
         prometheusEndpoint: 'http://vllm-openai:8000/metrics'
         metrics:
-          num_requests_running:
+          vllm:num_requests_running:
             Number of requests currently running on GPU:
-          num_requests_swapped:
+          vllm:num_requests_swapped:
             Number of requests swapped to CPU:
-          num_requests_waiting:
+          vllm:num_requests_waiting:
             Number of requests waiting to be processed:
-          gpu_cache_usage_perc:
+          vllm:gpu_cache_usage_perc:
             GPU KV-cache usage. 1 means 100 percent usage:
-          cpu_cache_usage_perc:
+          vllm:cpu_cache_usage_perc:
             CPU KV-cache usage. 1 means 100 percent usage:
-          cpu_prefix_cache_hit_rate:
+          vllm:cpu_prefix_cache_hit_rate:
             CPU prefix cache block hit rate:
-          gpu_prefix_cache_hit_rate:
+          vllm:gpu_prefix_cache_hit_rate:
             GPU prefix cache block hit rate:
-          avg_prompt_throughput_toks_per_s:
+          vllm:avg_prompt_throughput_toks_per_s:
             Average prefill throughput in tokens/s:
-          avg_generation_throughput_toks_per_s:
+          vllm:avg_generation_throughput_toks_per_s:
             Average generation throughput in tokens/s:
-          num_preemptions_total:
+          vllm:num_preemptions_total:
             Cumulative number of preemption from the engine:
-          prompt_tokens_total:
+          vllm:prompt_tokens_total:
             Number of prefill tokens processed:
-          generation_tokens_total:
+          vllm:generation_tokens_total:
             Number of generation tokens processed:
 
 services:
@@ -185,6 +185,7 @@ services:
         parameterDependencyMap:
           vllm-openai: model
           backend: model
+    privileged: true
     build:
       context: ./frontend
       dockerfile: Dockerfile
