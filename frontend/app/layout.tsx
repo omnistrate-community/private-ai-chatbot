@@ -1,7 +1,33 @@
 import '@/styles/globals.css'
-import { Inter } from 'next/font/google'
+import './animations.css'
+import localFont from 'next/font/local'
 
-const inter = Inter({ subsets: ['latin'] })
+// Load local SF Pro font
+const sfPro = localFont({
+  src: [
+    {
+      path: '../app/fonts/sf-pro-display-regular.woff2',
+      weight: '400',
+      style: 'normal',
+    },
+    {
+      path: '../app/fonts/sf-pro-display-medium.woff2',
+      weight: '500',
+      style: 'normal',
+    },
+    {
+      path: '../app/fonts/sf-pro-display-semibold.woff2',
+      weight: '600',
+      style: 'normal',
+    },
+    {
+      path: '../app/fonts/sf-pro-display-bold.woff2',
+      weight: '700',
+      style: 'normal',
+    },
+  ],
+  variable: '--font-sf-pro',
+})
 
 export const metadata = {
   title: 'AI Chat App',
@@ -14,8 +40,8 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
-      <body className={inter.className}>{children}</body>
+    <html lang="en" className={sfPro.variable}>
+      <body className="font-sf-pro">{children}</body>
     </html>
   )
 }

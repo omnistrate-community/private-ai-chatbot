@@ -1,0 +1,77 @@
+/* Apple-inspired animations */
+
+/* Smooth transitions for all elements */
+* {
+  transition-property: color, background-color, border-color, text-decoration-color, fill, stroke, opacity, box-shadow, transform, filter, backdrop-filter;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 150ms;
+}
+
+/* Page transitions */
+.page-enter {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+.page-enter-active {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 300ms, transform 300ms;
+}
+
+/* Button hover effect */
+.btn-apple-hover {
+  transition: all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.btn-apple-hover:hover {
+  transform: translateY(-2px);
+}
+
+.btn-apple-hover:active {
+  transform: translateY(0px);
+}
+
+/* Card hover effect */
+.card-apple-hover {
+  transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.card-apple-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Input focus animation */
+.input-apple-focus {
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.input-apple-focus:focus {
+  border-color: hsl(var(--primary));
+  box-shadow: 0 0 0 4px hsla(var(--primary), 0.2);
+}
+
+/* Modal animation */
+.modal-apple-enter {
+  opacity: 0;
+  transform: scale(0.95);
+}
+
+.modal-apple-enter-active {
+  opacity: 1;
+  transform: scale(1);
+  transition: opacity 150ms, transform 150ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modal-apple-exit {
+  opacity: 1;
+  transform: scale(1);
+}
+
+.modal-apple-exit-active {
+  opacity: 0;
+  transform: scale(0.95);
+  transition: opacity 150ms, transform 150ms cubic-bezier(0.16, 1, 0.3, 1);
+}

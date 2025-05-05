@@ -1,0 +1,356 @@
+version: '3.9'
+
+x-omnistrate-service-plan:
+  name: 'AI ChatBot - BYOC'
+  tenancyType: 'OMNISTRATE_DEDICATED_TENANCY'
+  deployment:
+    byoaDeployment:
+      AwsAccountId: '541226919566'
+      AwsBootstrapRoleAccountArn: 'arn:aws:iam::541226919566:role/omnistrate-bootstrap-role'
+
+x-omnistrate-load-balancer:
+  https:
+    - name: gateway
+      description: L7 Load Balancer for Web Frontend
+      paths:
+        - associatedResourceKey: app
+          path: /
+          backendPort: 3000
+        - associatedResourceKey: backend
+          path: /api
+          backendPort: 8080
+
+x-internal-integrations:
+  logs:
+    provider: native
+  metrics:
+    provider: native
+    additionalMetrics:
+      backend:
+        prometheusEndpoint: 'http://backend:8080/api/metrics'
+        metrics:
+          total_chat_threads_created:
+            Number of chat threads created:
+          total_request_tokens:
+            Number of request tokens received:
+          total_response_tokens:
+            Number of response tokens sent:
+          total_successful_signin_attempts:
+            Number of successful sign-in attempts:
+      vllm-openai:
+        prometheusEndpoint: 'http://vllm-openai:8000/metrics'
+        metrics:
+          vllm:num_requests_running:
+            Number of requests currently running on GPU:
+          vllm:num_requests_swapped:
+            Number of requests swapped to CPU:
+          vllm:num_requests_waiting:
+            Number of requests waiting to be processed:
+          vllm:gpu_cache_usage_perc:
+            GPU KV-cache usage. 1 means 100 percent usage:
+          vllm:cpu_cache_usage_perc:
+            CPU KV-cache usage. 1 means 100 percent usage:
+          vllm:cpu_prefix_cache_hit_rate:
+            CPU prefix cache block hit rate:
+          vllm:gpu_prefix_cache_hit_rate:
+            GPU prefix cache block hit rate:
+          vllm:avg_prompt_throughput_toks_per_s:
+            Average prefill throughput in tokens/s:
+          vllm:avg_generation_throughput_toks_per_s:
+            Average generation throughput in tokens/s:
+          vllm:num_preemptions_total:
+            Cumulative number of preemption from the engine:
+          vllm:prompt_tokens_total:
+            Number of prefill tokens processed:
+          vllm:generation_tokens_total:
+            Number of generation tokens processed:
+
+x-customer-integrations:
+  logs:
+  metrics:
+    additionalMetrics:
+      backend:
+        prometheusEndpoint: 'http://backend:8080/api/metrics'
+        metrics:
+          total_chat_threads_created:
+            Number of chat threads created:
+          total_request_tokens:
+            Number of request tokens received:
+          total_response_tokens:
+            Number of response tokens sent:
+          total_successful_signin_attempts:
+            Number of successful sign-in attempts:
+      vllm-openai:
+        prometheusEndpoint: 'http://vllm-openai:8000/metrics'
+        metrics:
+          num_requests_running:
+            Number of requests currently running on GPU:
+          num_requests_swapped:
+            Number of requests swapped to CPU:
+          num_requests_waiting:
+            Number of requests waiting to be processed:
+          gpu_cache_usage_perc:
+            GPU KV-cache usage. 1 means 100 percent usage:
+          cpu_cache_usage_perc:
+            CPU KV-cache usage. 1 means 100 percent usage:
+          cpu_prefix_cache_hit_rate:
+            CPU prefix cache block hit rate:
+          gpu_prefix_cache_hit_rate:
+            GPU prefix cache block hit rate:
+          avg_prompt_throughput_toks_per_s:
+            Average prefill throughput in tokens/s:
+          avg_generation_throughput_toks_per_s:
+            Average generation throughput in tokens/s:
+          num_preemptions_total:
+            Cumulative number of preemption from the engine:
+          prompt_tokens_total:
+            Number of prefill tokens processed:
+          generation_tokens_total:
+            Number of generation tokens processed:
+
+services:
+  app:
+    depends_on:
+      - backend
+      - postgres
+      - vllm-openai
+    x-omnistrate-compute:
+      instanceTypes:
+        - name: t3.small
+          cloudProvider: aws
+        - name: e2-medium
+          cloudProvider: gcp
+    x-omnistrate-capabilities:
+      enableMultiZone: true
+      networkType: INTERNAL
+    x-omnistrate-api-params:
+      - key: modelProviderAPIKey
+        description: The API key for the model provider
+        name: Model Provider API Key (OpenAI)
+        type: Password
+        modifiable: true
+        required: true
+        export: true
+        parameterDependencyMap:
+          backend: modelProviderAPIKey
+          vllm-openai: modelProviderAPIKey
+      - key: omnistrateUsername
+        description: The username for Omnistrate
+        name: Omnistrate Username
+        type: String
+        modifiable: true
+        required: true
+        export: true
+        parameterDependencyMap:
+          backend: omnistrateUsername
+      - key: omnistratePassword
+        description: The password for Omnistrate
+        name: Omnistrate Password
+        type: Password
+        modifiable: true
+        required: true
+        export: true
+        parameterDependencyMap:
+          backend: omnistratePassword
+      - key: hfToken
+        description: Hugging Face API token
+        name: Hugging Face API token
+        type: Password
+        export: true
+        required: true
+        modifiable: true
+        parameterDependencyMap:
+          vllm-openai: hfToken
+      - key: model
+        description: The model to use
+        name: Model
+        type: String
+        modifiable: true
+        required: false
+        export: true
+        options:
+          - meta-llama/Llama-3.1-8B-Instruct
+        defaultValue: meta-llama/Llama-3.1-8B-Instruct
+        parameterDependencyMap:
+          vllm-openai: model
+          backend: model
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"  # Expose frontend on port 3000
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_BASE_URL=https://{{ $backend.sys.network.externalClusterEndpoint }}
+
+  backend:
+    depends_on:
+      - postgres
+    x-omnistrate-mode-internal: true
+    x-omnistrate-compute:
+      instanceTypes:
+        - name: t3.small
+          cloudProvider: aws
+        - name: e2-medium
+          cloudProvider: gcp
+    x-omnistrate-capabilities:
+      enableMultiZone: true
+      networkType: INTERNAL
+    x-omnistrate-api-params:
+      - key: modelProviderAPIKey
+        description: The API key for the model provider
+        name: Model Provider API Key (OpenAI)
+        type: Password
+        modifiable: true
+        required: true
+        export: true
+      - key: omnistrateUsername
+        description: The username for Omnistrate
+        name: Omnistrate Username
+        type: String
+        modifiable: true
+        required: true
+        export: true
+      - key: omnistratePassword
+        description: The password for Omnistrate
+        name: Omnistrate Password
+        type: Password
+        modifiable: true
+        required: true
+        export: true
+      - key: model
+        description: The model to use
+        name: Model
+        type: String
+        modifiable: true
+        required: true
+        export: true
+    environment:
+      - MODEL_PROVIDER=vllm
+      - MODEL={{ $var.model }}
+      - MODEL_PROVIDER_ENDPOINT=http://vllm-openai:8000/v1
+      - MODEL_PROVIDER_API_KEY={{ $var.modelProviderAPIKey }}
+      - OMNISTRATE_USERNAME={{ $var.omnistrateUsername }}
+      - OMNISTRATE_PASSWORD={{ $var.omnistratePassword }}
+      - DB_USER=app_user
+      - DB_PASSWORD={{ $func.random(string, 16, $sys.deterministicSeedValue) }}
+      - DB_NAME=chatbot
+      - DB_HOST=postgres
+      - DB_PORT=5432
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"  # Expose backend on port 8000
+
+  postgres:
+    x-omnistrate-mode-internal: true
+    x-omnistrate-api-params:
+      - key: dbUser
+        description: The username for the database
+        name: Database User
+        type: String
+        modifiable: true
+        required: false
+        export: true
+        defaultValue: app_user
+      - key: dbName
+        description: The name of the database
+        name: Database Name
+        type: String
+        modifiable: true
+        required: false
+        export: true
+        defaultValue: chatbot
+    image: postgres:16.4-alpine
+    environment:
+      - POSTGRES_USER={{ $var.dbUser }}
+      - POSTGRES_PASSWORD={{ $func.random(string, 16, $sys.deterministicSeedValue) }}
+      - POSTGRES_DB={{ $var.dbName }}
+    volumes:
+      - source: postgres_data
+        target: /var/lib/postgresql/data
+        type: volume
+        x-omnistrate-storage:
+          aws:
+            instanceStorageType: AWS::EBS_GP3
+            instanceStorageSizeGi: 50
+            instanceStorageIOPS: 3000
+            instanceStorageThroughputMiBps: 125
+          gcp:
+            instanceStorageType: GCP::PD_BALANCED
+            instanceStorageSizeGi: 50
+    restart: always
+
+  vllm-openai:
+    x-omnistrate-mode-internal: true
+    x-omnistrate-compute:
+      rootVolumeSizeGi: 100
+      instanceTypes:
+        - name: g6e.xlarge
+          cloudProvider: aws
+    image: vllm/vllm-openai:v0.6.3
+    privileged: true
+    volumes:
+      - source: cache
+        target: /.cache/huggingface
+        type: volume
+        x-omnistrate-storage:
+          aws:
+            instanceStorageType: AWS::EBS_GP3
+            instanceStorageSizeGiAPIParam: instanceStorageSizeGi
+            instanceStorageIOPS: 3000
+            instanceStorageThroughputMiBps: 500
+          gcp:
+            instanceStorageType: GCP::PD_BALANCED
+            instanceStorageSizeGiAPIParam: instanceStorageSizeGi
+    environment:
+      - HUGGING_FACE_HUB_TOKEN={{ $var.hfToken }}
+      - VLLM_HOST_IP=0.0.0.0
+      - VLLM_LOGGING_LEVEL=DEBUG
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+    - vllm serve {{ $var.model }} --trust-remote-code --enable-chunked-prefill --max_num_batched_tokens 1024 --api-key {{ $var.modelProviderAPIKey }}
+    x-omnistrate-api-params:
+    - key: hfToken
+      description: Hugging Face API token
+      name: Hugging Face API token
+      type: Password
+      export: true
+      required: true
+      modifiable: true
+    - key: modelProviderAPIKey
+      description: The API key for the model provider
+      name: Model Provider API Key (OpenAI)
+      type: Password
+      export: true
+      required: true
+      modifiable: true
+    - key: instanceStorageSizeGi
+      description: The size of the instance storage volume in GiB
+      name: Instance Storage Size
+      type: Float64
+      modifiable: true
+      required: false
+      export: true
+      defaultValue: "100"
+      limits:
+        min: 30
+        max: 1000
+    - key: model
+      description: The model to use
+      name: Model
+      type: String
+      modifiable: true
+      required: true
+      export: true
+
+volumes:
+  postgres_data:
+  cache:
+
+x-omnistrate-image-registry-attributes:
+  ghcr.io:
+    auth:
+      password: ${{ secrets.GitHubPAT }}
+      username: aloknnikhil

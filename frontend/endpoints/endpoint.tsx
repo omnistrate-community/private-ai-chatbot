@@ -1,7 +1,7 @@
 function getSaaSDomainURL() {
     let saasURL = process.env.NEXT_PUBLIC_API_BASE_URL
     if (!saasURL || saasURL === "undefined") {
-      saasURL = "/api"
+      saasURL = "http://localhost:8080/api"
     }
   
     return saasURL

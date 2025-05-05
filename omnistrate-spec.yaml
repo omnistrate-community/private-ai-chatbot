@@ -1,12 +1,12 @@
 version: '3.9'
 
 x-omnistrate-service-plan:
-  name: 'AI ChatBot SaaS'
+  name: 'AI ChatBot - Hosted'
   tenancyType: 'OMNISTRATE_DEDICATED_TENANCY'
   deployment:
     hostedDeployment:
-      AwsAccountId: '<ACCOUNT ID>'
-      AwsBootstrapRoleAccountArn: 'arn:aws:iam::<ACCOUNT ID>:role/omnistrate-bootstrap-role'
+      AwsAccountId: '541226919566'
+      AwsBootstrapRoleAccountArn: 'arn:aws:iam::541226919566:role/omnistrate-bootstrap-role'
 
 x-omnistrate-load-balancer:
   https:
@@ -19,6 +19,51 @@ x-omnistrate-load-balancer:
         - associatedResourceKey: backend
           path: /api
           backendPort: 8080
+
+x-internal-integrations:
+  logs:
+    provider: native
+  metrics:
+    provider: native
+    additionalMetrics:
+      backend:
+        prometheusEndpoint: 'http://backend:8080/api/metrics'
+        metrics:
+          total_chat_threads_created:
+            Number of chat threads created:
+          total_request_tokens:
+            Number of request tokens received:
+          total_response_tokens:
+            Number of response tokens sent:
+          total_successful_signin_attempts:
+            Number of successful sign-in attempts:
+      vllm-openai:
+        prometheusEndpoint: 'http://vllm-openai:8000/metrics'
+        metrics:
+          num_requests_running:
+            Number of requests currently running on GPU:
+          num_requests_swapped:
+            Number of requests swapped to CPU:
+          num_requests_waiting:
+            Number of requests waiting to be processed:
+          gpu_cache_usage_perc:
+            GPU KV-cache usage. 1 means 100 percent usage:
+          cpu_cache_usage_perc:
+            CPU KV-cache usage. 1 means 100 percent usage:
+          cpu_prefix_cache_hit_rate:
+            CPU prefix cache block hit rate:
+          gpu_prefix_cache_hit_rate:
+            GPU prefix cache block hit rate:
+          avg_prompt_throughput_toks_per_s:
+            Average prefill throughput in tokens/s:
+          avg_generation_throughput_toks_per_s:
+            Average generation throughput in tokens/s:
+          num_preemptions_total:
+            Cumulative number of preemption from the engine:
+          prompt_tokens_total:
+            Number of prefill tokens processed:
+          generation_tokens_total:
+            Number of generation tokens processed:
 
 x-customer-integrations:
   logs:

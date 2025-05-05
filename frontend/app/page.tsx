@@ -68,7 +68,7 @@ export default function Home() {
       if (response.ok) {
         const data = await response.json()
         localStorage.setItem('token', data.token)
-        router.push('/profiles')
+        router.push('/chat')
       } else {
         const errorData = await response.json()
         setError(errorData.error || 'Authentication failed')
@@ -81,11 +81,19 @@ export default function Home() {
   }
 
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gray-100 p-4">
-      <Card className="w-full max-w-[400px]">
+    <div className="flex items-center justify-center min-h-screen bg-background p-4">
+      <Card className="w-full max-w-[400px] shadow-apple-lg">
         <CardHeader>
-          <CardTitle>Welcome to AI Chat App</CardTitle>
+          <CardTitle className="text-2xl font-semibold">Welcome to AI Chat App</CardTitle>
           <CardDescription>Login or create a new account</CardDescription>
+          <Button 
+            variant="pill" 
+            size="sm" 
+            className="mt-2 text-xs"
+            onClick={() => router.push('/design-showcase')}
+          >
+            View Design Showcase
+          </Button>
         </CardHeader>
         <CardContent>
           {error && (

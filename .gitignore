@@ -67,3 +67,5 @@ Thumbs.db
 # Sublime Text project files
 *.sublime*
 
+
+**/.claude/settings.local.json

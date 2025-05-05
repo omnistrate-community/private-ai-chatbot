@@ -9,6 +9,8 @@ import { Input } from "@/components/ui/input"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
 import { AlertCircle, Loader2 } from "lucide-react"
 import { API_ENDPOINTS } from '@/endpoints/endpoint'
+import { NavBar } from "@/components/NavBar"
+import { ChatSidebar } from "@/components/ChatSidebar"
 
 interface Thread {
   ID: string;
@@ -35,6 +37,8 @@ export default function ChatPage() {
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [chatDescription, setChatDescription] = useState('')
+  const [showNewChatDialog, setShowNewChatDialog] = useState(false)
   const router = useRouter()
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
@@ -125,13 +129,20 @@ export default function ChatPage() {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`
         },
-        body: JSON.stringify({ name: threadName || 'New Chat' })
+        body: JSON.stringify({ 
+          name: threadName || 'New Chat',
+          description: chatDescription || ''
+        })
       })
 
       if (response.ok) {
         const data = await response.json()
         setSelectedThreadId(data.threadId)
         await fetchThreads()
+        // Reset the form values
+        setThreadName('')
+        setChatDescription('')
+        setShowNewChatDialog(false)
       } else {
         const errorData = await response.json()
         setError(errorData.message || 'Failed to create new thread')
@@ -198,39 +209,40 @@ export default function ChatPage() {
     }
   }
 
+  useEffect(() => {
+    // Fix message container scrolling when selecting a thread
+    if (selectedThreadId && messages.length > 0) {
+      setTimeout(() => {
+        messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+    }
+  }, [selectedThreadId, messages.length]);
+
   return (
-    <div className="container mx-auto p-4 h-[calc(100vh-64px)] flex flex-col">
-      <Card className="flex-grow flex flex-col">
-        <CardHeader>
-          <CardTitle>Chat with AI</CardTitle>
-          <p className="text-sm text-muted-foreground">Start a new conversation or continue an existing one</p>
-          <div className="flex items-center space-x-2 mt-2">
-            <Input
-              value={threadName}
-              onChange={(e) => setThreadName(e.target.value)}
-              placeholder="Enter chat name"
-              className="flex-grow"
-            />
-            <Button onClick={createNewThread} disabled={isLoading}>
-              Start New Chat
-            </Button>
-          </div>
-          <div className="mt-4">
-            <h3 className="text-sm font-medium mb-2">Select a chat thread:</h3>
-            <div className="flex flex-wrap gap-2">
-              {threads.map((thread) => (
-                <Button
-                  key={thread.ID}
-                  variant={selectedThreadId === thread.ID ? "secondary" : "outline"}
-                  onClick={() => setSelectedThreadId(thread.ID)}
-                >
-                  {thread.Name}
-                </Button>
-              ))}
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className="flex-grow overflow-hidden">
+    <div className="min-h-screen bg-background flex flex-col">
+      <NavBar />
+      <div className="flex flex-1 overflow-hidden">
+        <ChatSidebar 
+          threads={threads}
+          selectedThreadId={selectedThreadId}
+          onSelectThread={(threadId) => setSelectedThreadId(threadId)}
+          onNewChat={createNewThread}
+          isLoading={isLoading}
+          threadName={threadName}
+          setThreadName={setThreadName}
+          chatDescription={chatDescription}
+          setChatDescription={setChatDescription}
+        />
+        
+        <div className="flex-1 p-4">
+          <Card className="h-[calc(100vh-72px)] flex flex-col">
+            <CardHeader>
+              <CardTitle>{selectedThreadId ? threadName || 'Chat with AI' : 'Select a chat or start a new one'}</CardTitle>
+              <p className="text-sm text-muted-foreground">
+                {selectedThreadId ? 'Continue your conversation with AI' : 'Choose a thread from the sidebar or click the New Chat button to create a new conversation'}
+              </p>
+            </CardHeader>
+        <CardContent className="flex-grow overflow-hidden flex flex-col">
           {error && (
             <Alert variant="destructive" className="mb-4">
               <AlertCircle className="h-4 w-4" />
@@ -238,30 +250,53 @@ export default function ChatPage() {
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
-          <div className="h-[calc(100vh-350px)] overflow-y-auto">
-            <div className="space-y-4 p-4">
-              {messages.map((message, index) => (
-                <div key={index} className={`flex ${message.MessageType === 'query' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`flex items-end space-x-2 ${message.MessageType === 'query' ? 'flex-row-reverse space-x-reverse' : ''}`}>
-                    <Avatar className="w-8 h-8">
-                      <AvatarImage src={message.MessageType === 'query' ? '/user-avatar.png' : '/ai-avatar.png'} />
-                      <AvatarFallback>{message.MessageType === 'query' ? 'U' : 'AI'}</AvatarFallback>
-                    </Avatar>
-                    <div className={`max-w-[70%] rounded-2xl px-4 py-2 ${
-                      message.MessageType === 'query' 
-                        ? 'bg-primary text-primary-foreground' 
-                        : 'bg-muted text-muted-foreground'
-                    }`}>
-                      <p className="text-sm">{message.Content}</p>
-                      <p className="text-xs opacity-50 mt-1">
-                        {new Date(message.CreatedAt).toLocaleString()}
-                      </p>
+          
+          <div className="flex-grow overflow-y-auto custom-scrollbar messages-container">
+            {selectedThreadId ? (
+              <div className="space-y-6 px-4 pb-8">
+                {messages.length > 0 ? (
+                  <>
+                    
+                    {messages.map((message, index) => (
+                      <div key={index} className={`flex ${message.MessageType === 'query' ? 'justify-end' : 'justify-start'}`}>
+                        <div className={`flex items-end space-x-2 ${message.MessageType === 'query' ? 'flex-row-reverse space-x-reverse' : ''}`}>
+                          <Avatar className="w-8 h-8">
+                            <AvatarImage src={message.MessageType === 'query' ? '/user-avatar.png' : '/ai-avatar.png'} />
+                            <AvatarFallback>{message.MessageType === 'query' ? 'U' : 'AI'}</AvatarFallback>
+                          </Avatar>
+                          <div className={`max-w-[70%] rounded-2xl px-4 py-2 ${
+                            message.MessageType === 'query' 
+                              ? 'bg-primary text-primary-foreground' 
+                              : 'bg-muted text-muted-foreground'
+                          }`}>
+                            <p className="text-sm">{message.Content}</p>
+                            <p className="text-xs opacity-50 mt-1">
+                              {new Date(message.CreatedAt).toLocaleString()}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                    
+                    {/* Reference for auto-scrolling */}
+                    <div ref={messagesEndRef} />
+                  </>
+                ) : (
+                  <div className="h-full flex items-center justify-center text-muted-foreground">
+                    <div className="text-center">
+                      <p>No messages yet. Start the conversation!</p>
                     </div>
                   </div>
+                )}
+              </div>
+            ) : (
+              <div className="h-full flex items-center justify-center text-muted-foreground">
+                <div className="text-center max-w-md mx-auto">
+                  <h3 className="text-xl font-medium mb-2">Welcome to AI Chat</h3>
+                  <p>Select an existing conversation from the sidebar or start a new chat.</p>
                 </div>
-              ))}
-              <div ref={messagesEndRef} />
-            </div>
+              </div>
+            )}
           </div>
         </CardContent>
         <CardFooter>
@@ -271,13 +306,26 @@ export default function ChatPage() {
               onChange={(e) => setInput(e.target.value)}
               placeholder="Type your message..."
               disabled={isLoading || !selectedThreadId}
+              className="bg-background/80 backdrop-blur-sm focus-visible:ring-primary"
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault()
+                  handleSendMessage(e)
+                }
+              }}
             />
-            <Button type="submit" disabled={isLoading || !selectedThreadId}>
+            <Button 
+              type="submit" 
+              disabled={isLoading || !selectedThreadId}
+              variant="default"
+            >
               {isLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : 'Send'}
             </Button>
           </form>
         </CardFooter>
-      </Card>
+          </Card>
+        </div>
+      </div>
     </div>
   )
 }
