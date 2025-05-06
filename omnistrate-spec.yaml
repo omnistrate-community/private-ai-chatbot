@@ -78,6 +78,7 @@ x-internal-integrations:
 
 x-customer-integrations:
   logs:
+  licensing:
   metrics:
     additionalMetrics:
       backend:
@@ -193,7 +194,7 @@ services:
       - "3000:3000"  # Expose frontend on port 3000
     environment:
       - NODE_ENV=production
-      - NEXT_PUBLIC_API_BASE_URL=https://{{ $backend.sys.network.externalClusterEndpoint }}
+      - NEXT_PUBLIC_API_BASE_URL=https://gatewaylb.{{ $sys.id }}.hc-fqtfy06wo.{{ $sys.deploymentCell.region}}.{{ $sys.deploymentCell.cloudProviderName }}.f2e0a955bb84.cloud/api
 
   backend:
     depends_on:

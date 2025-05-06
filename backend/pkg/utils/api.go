@@ -15,6 +15,8 @@ type NativeAPI http.HandlerFunc
 
 func init() {
 	r = gin.Default()
+	r.RedirectTrailingSlash = true
+	r.RedirectFixedPath = true
 	corsMW := cors.New(cors.Options{
 		AllowedOrigins: []string{"*"},
 		AllowedMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
