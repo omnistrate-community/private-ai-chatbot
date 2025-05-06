@@ -22,16 +22,22 @@ and Llama 3.1
 
 1. Clone the repository:
     ```bash
-    git clone https://github.com/omnistrate-community/ai-chatbot.git
+    git clone https://github.com/omnistrate-community/private-ai-chatbot.git
     ```
 
 2. Setup your Omnistrate CLI - See [Omnistrate CLI](https://ctl.omnistrate.cloud/install)
 
 3. Add your AWS account details to the `omnistrate-spec.yaml` file:
 
-4. Launch your SaaS with Omnistrate:
+4. Launch your SaaS with Omnistrate:  
+    a. BYOA (Bring Your Own Account) - This will use your customers' AWS / GCP / Azure account to deploy the service.
     ```bash
-    omctl build-from-repo -f omnistrate-spec.yaml
+    omctl build-from-repo -f omnistrate-spec-byoa.yaml --service-name B2BAIApp --platforms linux/arm64
+    ```  
+    
+    b. Fully Hosted - This will use your AWS / GCP / Azure account to deploy the service and manage all your customers in one place.
+    ```bash
+    omctl build-from-repo -f omnistrate-spec.yaml --service-name B2BAIApp --platforms linux/arm64
     ```
 
 

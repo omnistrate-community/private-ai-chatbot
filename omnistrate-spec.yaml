@@ -127,7 +127,7 @@ services:
       - vllm-openai
     x-omnistrate-compute:
       instanceTypes:
-        - name: t3.small
+        - name: t4g.small
           cloudProvider: aws
         - name: e2-medium
           cloudProvider: gcp
@@ -201,13 +201,12 @@ services:
     x-omnistrate-mode-internal: true
     x-omnistrate-compute:
       instanceTypes:
-        - name: t3.small
+        - name: t4g.small
           cloudProvider: aws
         - name: e2-medium
           cloudProvider: gcp
     x-omnistrate-capabilities:
       enableCustomZone: true
-      networkType: INTERNAL
     x-omnistrate-api-params:
       - key: modelProviderAPIKey
         description: The API key for the model provider

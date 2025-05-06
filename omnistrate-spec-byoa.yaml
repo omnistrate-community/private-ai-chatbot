@@ -127,7 +127,7 @@ services:
       - vllm-openai
     x-omnistrate-compute:
       instanceTypes:
-        - name: t3.small
+        - name: t4g.small
           cloudProvider: aws
         - name: e2-medium
           cloudProvider: gcp
@@ -193,7 +193,7 @@ services:
       - "3000:3000"  # Expose frontend on port 3000
     environment:
       - NODE_ENV=production
-      - NEXT_PUBLIC_API_BASE_URL=https://{{ $backend.sys.network.externalClusterEndpoint }}
+      - NEXT_PUBLIC_API_BASE_URL=https://gatewaylb.{{ $sys.id }}.hc-r8mp1g5m0.{{ $sys.deploymentCell.region}}.{{ $sys.deploymentCell.cloudProviderName }}.f2e0a955bb84.cloud/api
 
   backend:
     depends_on:
@@ -201,13 +201,12 @@ services:
     x-omnistrate-mode-internal: true
     x-omnistrate-compute:
       instanceTypes:
-        - name: t3.small
+        - name: t4g.small
           cloudProvider: aws
         - name: e2-medium
           cloudProvider: gcp
     x-omnistrate-capabilities:
       enableCustomZone: true
-      networkType: INTERNAL
     x-omnistrate-api-params:
       - key: modelProviderAPIKey
         description: The API key for the model provider

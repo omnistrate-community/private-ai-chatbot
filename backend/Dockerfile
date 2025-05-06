@@ -2,6 +2,9 @@
 # This is based on Debian and sets the GOPATH to /go.
 FROM golang:1.24-bullseye AS builder
 
+ARG TARGETOS
+ARG TARGETARCH
+
 # Set the Current Working Directory inside the container
 WORKDIR /app
 
@@ -9,13 +12,13 @@ WORKDIR /app
 COPY go.mod go.sum ./
 
 # Download all dependencies. Dependencies will be cached if the go.mod and go.sum files are not changed
-RUN go mod download
+RUN GOOS=${TARGETOS} GOARCH=${TARGETARCH} go mod download
 
 # Copy the source from the current directory to the Working Directory inside the container
 COPY . .
 
 # Build the Go app
-RUN go build -o main ./cmd/
+RUN GOOS=${TARGETOS} GOARCH=${TARGETARCH} go build -o main ./cmd/
 
 # Start a new stage from scratch
 FROM debian:bullseye-slim
